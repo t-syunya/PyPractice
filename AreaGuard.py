@@ -2,11 +2,12 @@ import pygame, math, random, sys, re
 from pygame.locals import *  # お呪い　不要？
 
 GAME_MODE = {'START': 0, 'PLAY': 1, 'GAMEOVER': 2}
-SCR_RECT = Rect(0, 0, 600, 1000)  # スクリーンサイズ
+SCR_RECT = Rect(0, 0, 400, 600)  # スクリーンサイズ
 
 
 class Game:
-    enemy_prob = 12
+    enemy_prob = 60
+
     def __init__(self):
         pygame.init()
         screen = pygame.display.set_mode(SCR_RECT.size)
@@ -20,7 +21,6 @@ class Game:
             self.draw(screen)
             pygame.display.update()
             self.key_handler()
-
 
     def init_game(self):
         self.game_state = GAME_MODE['START']
@@ -41,7 +41,6 @@ class Game:
             self.all_sprite.update()
             self.collision_detection()
 
-
     def draw(self, screen):
         screen.fill((0, 0, 0))
         if self.game_state == GAME_MODE['START']:
@@ -51,7 +50,7 @@ class Game:
             screen.blit(title, ((SCR_RECT.width - title.get_width()) / 2, 200))
             # エネミーのみ描画
             enemy_image = Enemy.image
-            screen.blit(enemy_image, ((SCR_RECT.width - enemy_image.get_width())/ 2, 300))
+            screen.blit(enemy_image, ((SCR_RECT.width - enemy_image.get_width()) / 2, 300))
             # PUSH SPACE KEYを描画
             push_font = pygame.font.SysFont(None, 40)
             push_space = push_font.render("PUSH SPACE KEY", False, (255, 255, 255))
@@ -108,16 +107,19 @@ class Game:
                 elif self.game_state == GAME_MODE['GAMEOVER']:  # ゲームオーバー
                     self.init_game()  # ゲームを初期化して再開
                     self.game_state = GAME_MODE['PLAY']
+
+
 class Player(pygame.sprite.Sprite):
-    speed = 3 # 移動速度
-    charge = 15 # レーザーがチャージされるまでの時間
+    speed = 3  # 移動速度
+    charge = 15  # レーザーがチャージされるまでの時間
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.rect = self.image.get_rect()
-        self.rect.bottom = SCR_RECT.bottom #プレイヤーは画面の一番下からスタート
+        self.rect.bottom = SCR_RECT.bottom  # プレイヤーは画面の一番下からスタート
         self.rect.left = 400
         self.charge_timer = 0
+
     def update(self):
         pressed_key = pygame.key.get_pressed()
         if pressed_key[K_UP]:
@@ -138,10 +140,12 @@ class Player(pygame.sprite.Sprite):
                 self.charge_timer -= 1
             else:
                 # 発射！
-                Razer(self.rect.center)# 作成すると同時にall_spriteに追加される。
+                Razer(self.rect.center, self.rect.top)  # 作成すると同時にall_spriteに追加される。
                 self.charge_timer = self.charge
+
+
 class Enemy(pygame.sprite.Sprite):
-    speed = 3 # 移動速度
+    speed = 3  # 移動速度
 
     def __init__(self):
         """
@@ -155,21 +159,25 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.left = random.randrange(SCR_RECT.width - self.rect.width)
         self.rect.bottom = SCR_RECT.top
 
-    def update(self):#速度設定
-        mov_vec = [(0, self.speed), (0, self.speed +1), (0, self.speed +2), (0, self.speed -1), (0, self.speed -2)]
+    def update(self):  # 速度設定
+        mov_vec = [(0, self.speed), (0, self.speed + 1), (0, self.speed + 2), (0, self.speed - 1), (0, self.speed - 2)]
         self.rect.move_ip(random.choice(mov_vec))
 
+
 class Razer(pygame.sprite.Sprite):
-    speed = 9 # レーザーの移動速度
-    def __init__(self, pos):
+    speed = 9  # レーザーの移動速度
+
+    def __init__(self, pos_x, pos_y):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.rect = self.image.get_rect()
-        self.rect.center = pos
+        self.rect.center = pos_x
+        self.rect.bottom = pos_y
 
     def update(self):
-        self.rect.move_ip(0, -self.speed) # 上へ移動
-        if self.rect.top < 0: # 上辺に達したら削除
+        self.rect.move_ip(0, -self.speed)  # 上へ移動
+        if self.rect.top < 0:  # 上辺に達したら削除
             self.kill()
+
 
 def load_image(filename, colorkey=None):
     # 画像ファイルがpngかgifか判定するための正規表現
