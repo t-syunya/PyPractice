@@ -2,7 +2,7 @@ import pygame, math, random, sys, re
 from pygame.locals import *  # お呪い　不要？
 
 GAME_MODE = {'START': 0, 'PLAY': 1, 'GAMEOVER': 2}
-SCR_RECT = Rect(0, 0, 400, 600)  # スクリーンサイズ
+SCR_RECT = Rect(0, 0, 576, 768)  # スクリーンサイズ
 
 
 class Game:
@@ -156,7 +156,7 @@ class Enemy(pygame.sprite.Sprite):
         """
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.rect = self.image.get_rect()
-        self.rect.left = random.randrange(SCR_RECT.width - self.rect.width)
+        self.rect.left = random.randrange(SCR_RECT.width / self.rect.width) * self.rect.width
         self.rect.bottom = SCR_RECT.top
 
     def update(self):  # 速度設定
