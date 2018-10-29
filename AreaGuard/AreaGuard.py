@@ -2,12 +2,11 @@ import pygame, math, random, sys, re
 from pygame.locals import *  # お呪い　不要？
 
 GAME_MODE = {'START': 0, 'PLAY': 1, 'GAMEOVER': 2}
-# BARRIER_MODE = {'RED': 0, 'GREEN': 1, 'YELLOW': 2}
+BARRIER_MODE = {'RED': 0, 'YELLOW': 1, 'GREEN': 2}
 SCR_RECT = Rect(0, 0, 576, 768)  # スクリーンサイズ
 
 
 class Game:
-    enemy_prob = 60
 
     def __init__(self):
         pygame.init()
@@ -25,18 +24,20 @@ class Game:
 
     def init_game(self):
         self.game_state = GAME_MODE['START']
-        # self.barrier_color = BARRIER_MODE['GREEN']
+        self.barrier_color = BARRIER_MODE['GREEN']
+        Barrier.image = load_image("barrier_green.png")
         self.all_sprite = pygame.sprite.RenderUpdates()
-        # self.barrier = pygame.sprite.Group()
+        self.barrier = pygame.sprite.Group()
         self.pc = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.razers = pygame.sprite.Group()
-        # Barrier.containers = self.all_sprite, self.barrier
+        Barrier.containers = self.all_sprite, self.barrier
         Player.containers = self.all_sprite, self.pc
         Enemy.containers = self.all_sprite, self.enemies
         Razer.containers = self.all_sprite, self.razers
-        #self.barrier = Barrier()
+        self.area = Barrier()
         self.player = Player()
+        self.enemy_prob = 60
         self.score = 0
 
     def update(self):
@@ -94,15 +95,19 @@ class Game:
         razer_collided = pygame.sprite.groupcollide(self.enemies, self.razers, True, True)
         for razer in razer_collided.keys():
             self.score += 1
+            if self.score % 50 == 0:
+                self.enemy_prob = self.enemy_prob - 10 + self.score / 50
 
-        """barrier_collided = pygame.sprite.groupcollide(self.enemies, self.barrier, True, True)
+        barrier_collided = pygame.sprite.groupcollide(self.enemies, self.barrier, True, False)
         for barrier in barrier_collided.keys():
-            if self.barrier_color == BARRIER_MODE['GREEN']:
-                self.barrier_color = BARRIER_MODE['YELLOW']
+            if self.barrier_color == BARRIER_MODE['RED']:
+                self.game_state = GAME_MODE['GAMEOVER']
             if self.barrier_color == BARRIER_MODE['YELLOW']:
                 self.barrier_color = BARRIER_MODE['RED']
-            if self.barrier_color == BARRIER_MODE['RED']:
-                self.game_state = GAME_MODE['GAMEOVER']"""
+                Barrier.image = load_image("barrier_red.png")
+            if self.barrier_color == BARRIER_MODE['GREEN']:
+                self.barrier_color = BARRIER_MODE['YELLOW']
+                Barrier.image = load_image("barrier_yellow.png")
 
     def load_images(self):
         # スプライトの画像を登録
@@ -110,7 +115,6 @@ class Game:
         Enemy.image = load_image("enemy_img.png")
         Razer.image = load_image("razer_img.png")
 
-    # Barrier.image = load_image("barrier_green.png")
 
 
     def key_handler(self):
@@ -166,7 +170,7 @@ class Player(pygame.sprite.Sprite):
             self.charge_timer = 0
 
 
-"""class Barrier(pygame.sprite.Sprite):
+class Barrier(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
@@ -174,12 +178,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.left = SCR_RECT.left
         self.rect.bottom = SCR_RECT.bottom
 
-
-    def update(self):
-        if Game.barrier_color == BARRIER_MODE['YELLOW']:
-            self.image = load_image("barrier_yellow.png")
-        if Game.barrier_color == BARRIER_MODE['RED']:
-            self.image = load_image("barrier_red.png")"""
 
 class Enemy(pygame.sprite.Sprite):
     speed = 3  # 移動速度
